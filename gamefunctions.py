@@ -1,3 +1,11 @@
+"""Functions used for a simple adventure game.
+
+This file contains helper functions for the game.
+It includes functions for printing a welcome message,
+printing a shop menu, calculating purchases, and
+generating a random monster.
+"""
+
 import random
 
 def purchase_item(item_price, starting_money,quantity_to_purchase=1):
@@ -25,7 +33,7 @@ def purchase_item(item_price, starting_money,quantity_to_purchase=1):
     return quantity_purchased, remaining_money
 
 
-def new_random_monster():
+def random_monster():
     """
     Generates a random monster with randomized stats.
 
@@ -100,33 +108,31 @@ def print_shop_menu(item1Name, item1Price, item2Name, item2Price):
     print(line2)
     print(bottomb)
 
+def test_functions():
 
-#Test purchase_item
-
-print("Test 1:", purchase_item(120,1000,3))
-print("Test 2: (cannot afford all):", purchase_item(10,45,6))
-print("Test 3: (default quantity):", purchase_item(300,2100))
-
-
-#Test new_random_monster
-
-print("Monster 1:", new_random_monster())
-print("Monster 2:", new_random_monster())
-print("Monster 3:", new_random_monster())
-
-#Test print_welcome
-    
-print_welcome("Beans", 16)
-print_welcome("Kaytie", 13)
-print_welcome("Lilly", 8)
-
-#Test print_shop_menu
-
-print_shop_menu("32ozBeer", 6, "Coffee", 2.50)
-print_shop_menu("64ozBeer", 11, "BowloBeans", 2)
-print_shop_menu("BugSpray", 8, "Floss", 1)
+	#Test purchase_item
+	print("Test 1:", purchase_item(120,1000,3))
+	print("Test 2: (cannot afford all):", purchase_item(10,45,6))
+	print("Test 3: (default quantity):", purchase_item(300,2100))
 
 
+	#Test random_monster
+	print("Monster 1:", random_monster())
+	print("Monster 2:", random_monster())
+	print("Monster 3:", random_monster())
+
+	#Test print_welcome
+	print_welcome("Beans", 16)
+	print_welcome("Kaytie", 13)
+	print_welcome("Lilly", 8)
+
+	#Test print_shop_menu
+	print_shop_menu("32ozBeer", 6, "Coffee", 2.50)
+	print_shop_menu("64ozBeer", 11, "BowloBeans", 2)
+	print_shop_menu("BugSpray", 8, "Floss", 1)
+
+if __name__ == "__main__":
+    test_functions()
 
 
 
