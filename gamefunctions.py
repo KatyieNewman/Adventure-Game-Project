@@ -1,7 +1,6 @@
 import random
 
 def purchase_item(item_price, starting_money,quantity_to_purchase=1):
-    
     """
     Calculates how many items can be purchased and how much money remains.
 
@@ -13,7 +12,6 @@ def purchase_item(item_price, starting_money,quantity_to_purchase=1):
     Returns:
         (quantity_purchased, remaining_money)
     """
-    
     max_affordable = starting_money // item_price
 
     if quantity_to_purchase <= max_affordable:
@@ -28,15 +26,14 @@ def purchase_item(item_price, starting_money,quantity_to_purchase=1):
 
 
 def new_random_monster():
-    
-    monster_type = random.choice(["Dragon", "Ghost", "Witch"])
     """
     Generates a random monster with randomized stats.
 
     Returns:
         dict containing name, description, health, power, and money.
     """
-
+    monster_type = random.choice(["Dragon", "Ghost", "Witch"])
+    
     if monster_type == "Dragon":
         name = "A Dragon"
         description = "A huge scaly dragon leaps from the dark and coughs a ball of fire at you."
@@ -67,35 +64,20 @@ def new_random_monster():
         "money": money
     }
 
-#Test purchase_item
 
-print("Test 1:", purchase_item(120,1000,3))
-print("Test 2: (cannot afford all):", purchase_item(10,45,6))
-print("Test 3: (default quantity):", purchase_item(300,2100))
-
-
-#Test new_random_monster
-
-print("Monster 1:", new_random_monster())
-print("Monster 2:", new_random_monster())
-print("Monster 3:", new_random_monster())
 
 def print_welcome(name, width):
-    
-    message = f"Hello, {name}!"
-    print(message.center(width))
-    
     """
     Prints a lovely centered welcome message.
 
     Parameters:
         name (str)
         width (int)
-
     """
-     
+    message = f"Hello, {name}!"
+    print(message.center(width))
+
 def print_shop_menu(item1Name, item1Price, item2Name, item2Price):
-    
     """
     Prints a bordered menu with two items and prices.
 
@@ -104,7 +86,6 @@ def print_shop_menu(item1Name, item1Price, item2Name, item2Price):
         item2Name (str), item2Price (float)
 
     """
-    
     topb = "/----------------------\\"
     bottomb = "\\----------------------/"
 
@@ -118,6 +99,20 @@ def print_shop_menu(item1Name, item1Price, item2Name, item2Price):
     print(line1)
     print(line2)
     print(bottomb)
+
+
+#Test purchase_item
+
+print("Test 1:", purchase_item(120,1000,3))
+print("Test 2: (cannot afford all):", purchase_item(10,45,6))
+print("Test 3: (default quantity):", purchase_item(300,2100))
+
+
+#Test new_random_monster
+
+print("Monster 1:", new_random_monster())
+print("Monster 2:", new_random_monster())
+print("Monster 3:", new_random_monster())
 
 #Test print_welcome
     
