@@ -1,29 +1,26 @@
-"""Game that uses functions from gamefunctions.py"""
+
+"""Main game file that runs the adventure game."""
 
 import gamefunctions
 
+
 def main():
-    name = input("What's your name? ")
-    gamefunctions.print_welcome(name, 20)
+    player_hp = 30
+    player_gold = 10
+    keep_playing = True
 
-    print("Welcome to the shop!")
-    gamefunctions.print_shop_menu("64ozBeer", 11, "BugSpray", 8)
+    while keep_playing:
+        gamefunctions.print_main_menu(player_hp, player_gold)
+        user_choice = gamefunctions.get_main_menu_choice()
 
-    money = float(input("How much money do you have? "))
-    quantity = int(input("How many oz of beer do you want? "))
-    result = gamefunctions.purchase_item(11, money, quantity)
+        if user_choice == "1":
+            player_hp, player_gold = gamefunctions.fight_monster(player_hp, player_gold)
+        elif user_choice == "2":
+            player_hp, player_gold = gamefunctions.sleep_in_town(player_hp, player_gold)
+        elif user_choice == "3":
+            print("Thanks for playing!")
+            keep_playing = False
 
-    print("You bought", result[0], "item(s).")
-    print("You have", result[1], "money left.")
-
-    print("A monster appears!")
-    monster = gamefunctions.random_monster()
-
-    print(monster["name"])
-    print(monster["description"])
-    print("Health:", monster["health"])
-    print("Power:", monster["power"])
-    print("Money:", monster["money"])
 
 if __name__ == "__main__":
     main()

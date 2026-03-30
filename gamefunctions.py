@@ -139,5 +139,135 @@ if __name__ == "__main__":
 
 
 
+
+### ---------------- NEW GAME FUNCTIONS ----------------###
+
+
+
+def print_main_menu(current_hp, current_gold):
+    
+    """Prints the main menu in town."""
+    
+    print()
+    print("You are in a stinky town.")
+    print(f"HP: {current_hp}, Gold: {current_gold}")
+    print("What do you want to do?")
+    print("1) Fight a monster?")
+    print("2) Sleep. (Restore HP for 5 Gold)")
+    print("3) Quit")
+
+
+def get_main_menu_choice():
+    
+    """Gets a valid menu choice."""
+    
+    choice = input("Enter choice: ")
+
+    while choice not in ["1", "2", "3"]:
+        print("That is not a valid option. Try again.")
+        choice = input("Enter choice: ")
+
+    return choice
+
+
+def sleep_in_town(current_hp, current_gold):
+    
+    """Restores HP if player has enough gold."""
+    
+    if current_gold >= 5:
+        current_gold -= 5
+        current_hp = 30
+        print("You take a snooze. You feel much better.")
+    else:
+        print("You do not have enough gold to sleep SAD...")
+
+    return current_hp, current_gold
+
+
+def display_fight_stats(player_hp, monster_name, monster_hp):
+    
+    """fight info."""
+    
+    print()
+    print("Fight:")
+    print(f"Your HP: {player_hp}")
+    print(f"{monster_name} HP: {monster_hp}")
+    print("1) Attack!")
+    print("2) Run")
+
+
+def get_fight_choice():
+    
+    """Gets a fight choice."""
+    
+    choice = input("Enter choice: ")
+
+    while choice not in ["1", "2"]:
+        print("Invalid choice. Try again.")
+        choice = input("Enter choice: ")
+
+    return choice
+
+
+def fight_monster(player_hp, player_gold):
+    
+    """fight loop."""
+    
+    monster = random_monster()
+
+    monster_name = monster["name"]
+    monster_hp = monster["health"]
+    monster_power = monster["power"]
+
+    print()
+    print(f"A {monster_name} appears!")
+
+    while player_hp > 0 and monster_hp > 0:
+        display_fight_stats(player_hp, monster_name, monster_hp)
+        choice = get_fight_choice()
+
+        if choice == "1":
+            print("You attack!")
+            monster_hp -= 5
+
+            if monster_hp > 0:
+                print(f"The {monster_name} strikes you!")
+                player_hp -= monster_power
+
+        elif choice == "2":
+            print("You run away!")
+            break
+
+    if player_hp <= 0:
+        print("You lost the fight.")
+        player_hp = 30
+        print("You wake up back in town.")
+
+    elif monster_hp <= 0:
+        print("You won the fight!")
+        player_gold += 5
+        print("You found 5 gold.")
+
+    return player_hp, player_gold
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
     
     
