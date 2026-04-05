@@ -154,7 +154,10 @@ def print_main_menu(current_hp, current_gold):
     print("What do you want to do?")
     print("1) Fight a monster?")
     print("2) Sleep. (Restore HP for 5 Gold)")
-    print("3) Quit")
+    print("3) Visit Shop")
+    print("4) Show Inventtory")
+    print("5) Equipt Weapon")
+    print("6) Quit")
 
 
 def get_main_menu_choice():
@@ -163,7 +166,7 @@ def get_main_menu_choice():
     
     choice = input("Enter choice: ")
 
-    while choice not in ["1", "2", "3"]:
+    while choice not in ["1", "2", "3", "4", "5", "6"]:
         print("That is not a valid option. Try again.")
         choice = input("Enter choice: ")
 
@@ -209,11 +212,14 @@ def get_fight_choice():
     return choice
 
 
-def fight_monster(player_hp, player_gold):
+def fight_monster(state):
     
     """fight loop."""
     
     monster = random_monster()
+
+    player_hp = state["player_hp"]
+    player_gold = state["player_gold"]
 
     monster_name = monster["name"]
     monster_hp = monster["health"]
@@ -228,7 +234,8 @@ def fight_monster(player_hp, player_gold):
 
         if choice == "1":
             print("You attack!")
-            monster_hp -= 5
+            damage = 5 + get_weapon_damage(state)
+            monster_hp -= damage
 
             if monster_hp > 0:
                 print(f"The {monster_name} strikes you!")
@@ -248,26 +255,181 @@ def fight_monster(player_hp, player_gold):
         player_gold += 5
         print("You found 5 gold.")
 
-    return player_hp, player_gold
+    state["player_hp"] = player_hp
+    state["player_gold"] = player_gold
+
+    return state
+
+
+
+### ---------------------Inventory List (Project)-----------------------###
+
+
+def create_new_state(player_name):
+    
+    """
+    Creates a dictionary to store all game information.
+    """
+
+    state = {
+        "player_name": player_name,
+        "player_gold": 100,   # lots of gold for testing
+        "player_hp": 30,
+        "player_inventory": [],
+        "equipped_weapon": None
+    }
+
+    return state
 
 
 
 
+def create_sword():
+    
+    """
+    Creates a sword.
+    """
+
+    sword = {
+        "name": "Sword",
+        "type": "weapon",
+        "maxDurability": 5,
+        "currentDurability": 5,
+        "equipped": False
+    }
+
+    return sword
 
 
 
 
+def create_magic_bomb():
+    
+    """
+    Creates a magicbomb.
+    """
+
+    magic_bomb = {
+        "name": "Magic Bomb",
+        "type": "special",
+        "effect": "auto_win"
+    }
+
+    return magic_bomb
 
 
 
+def get_shop_items():
+    
+    """
+    Returns whats in the shop.
+    """
 
+    shop_items = [
+        create_sword(),
+        create_magic_bomb()
+    ]
 
-
+    return shop_items
 
     
 
-
-
-
+def show_inventory(state):
     
+    """
+    Prints players inventory.
+    """
+
+    print("Inventory:")
+
+    if len(state["player_inventory"]) == 0:
+        print("Your inventory is empty.")
+    else:
+        for item in state["player_inventory"]:
+            print(item["name"])
+
+
+
+def buy_item(state, choice):
+    
+    """
+    Buy an item from the shop.
+    """
+
+    shop_items = get_shop_items()
+
+    if choice < 1 or choice > len(shop_items):
+        print("That is not a valid option.")
+        return
+
+    item = shop_items[choice - 1]
+
+    if state["player_gold"] >= 10:
+        state["player_gold"] -= 10
+
+        state["player_inventory"].append(item)
+
+        print(f"You bought a {item['name']}.")
+    else:
+        print("You do not have enough gold.")
+
+
+
+def equip_weapon(state):
+    
+    """
+    Lets the player equip a weapon from inventory.
+    """
+
+    weapon_list = []
+
+    for item in state["player_inventory"]:
+        if item["type"] == "weapon":
+            weapon_list.append(item)
+
+    if len(weapon_list) == 0:
+        print("You have no weapons to equip.")
+        return
+
+    print("Weapons:")
+
+    for i in range(len(weapon_list)):
+        print(f"{i + 1}) {weapon_list[i]['name']}")
+
+    choice = int(input("Enter choice: "))
+
+    if choice < 1 or choice > len(weapon_list):
+        print("That is not a valid option.")
+        return
+
+    for item in state["player_inventory"]:
+        if item["type"] == "weapon":
+            item["equipped"] = False
+
+    weapon_list[choice - 1]["equipped"] = True
+    state["equipped_weapon"] = weapon_list[choice - 1]["name"]
+
+    print(f"You equipped {state['equipped_weapon']}.")
+
+
+def get_weapon_damage(state):
+    """
+    Returns extra damage from an equipped weapon.
+    Also lowers durability by 1 each time it is used.
+    """
+
+    for item in state["player_inventory"]:
+        if item["type"] == "weapon" and item["equipped"] is True:
+            if item["currentDurability"] > 0:
+                item["currentDurability"] -= 1
+                print(f"You used {item['name']}.")
+                print(f"{item['name']} durability is now {item['currentDurability']}.")
+                return 5
+            else:
+                print(f"Your {item['name']} is broken.")
+                item["equipped"] = False
+                state["equipped_weapon"] = None
+                return 0
+
+    return 0
     
