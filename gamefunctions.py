@@ -157,7 +157,7 @@ def print_main_menu(current_hp, current_gold):
     print("3) Visit Shop")
     print("4) Show Inventtory")
     print("5) Equipt Weapon")
-    print("6) Quit")
+    print("6) Quit AND save")
 
 
 def get_main_menu_choice():

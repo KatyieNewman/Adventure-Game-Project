@@ -1,12 +1,44 @@
 
 """Main game file that runs the adventure game."""
 
+import json
+import os
 import gamefunctions
 
 
+def save_game(state, filename):
+    """Save the game state to a file."""
+    with open(filename, "w") as file:
+        json.dump(state, file)
+
+
+def load_game(filename):
+    """Load the game state from a file."""
+    with open(filename, "r") as file:
+        state = json.load(file)
+    return state
+
+
 def main():
-    player_name = input("Enter your name: ")
-    state = gamefunctions.create_new_state(player_name)
+    
+    print("1) New Game")
+    print("2) Load Game")
+    start_choice = input("Enter choice: ")
+
+    if start_choice == "2":
+        filename = input("Enter save file name: ")
+
+        if os.path.exists(filename):
+            state = load_game(filename)
+            print("Game loaded successfully!")
+        else:
+            print("Save file not found. Starting a new game.")
+            player_name = input("Enter your name: ")
+            state = gamefunctions.create_new_state(player_name)
+    else:
+        player_name = input("Enter your name: ")
+        state = gamefunctions.create_new_state(player_name)
+
     keep_playing = True
 
     while keep_playing:
@@ -34,8 +66,11 @@ def main():
 
         elif user_choice == "5":
             gamefunctions.equip_weapon(state)
-            
+
         elif user_choice == "6":
+            filename = input("Enter save file name: ")
+            save_game(state, filename)
+            print("Game saved.")
             print("Thanks for playing!")
             keep_playing = False
 
