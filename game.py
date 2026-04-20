@@ -44,9 +44,12 @@ def main():
     while keep_playing:
         gamefunctions.print_main_menu(state["player_hp"], state["player_gold"])
         user_choice = gamefunctions.get_main_menu_choice()
-
         if user_choice == "1":
-            state = gamefunctions.fight_monster(state)
+            result = gamefunctions.run_map(state)
+        
+            if result == "monster":
+                state = gamefunctions.fight_monster(state)
+                gamefunctions.place_new_monster(state)
             
         elif user_choice == "2":
             state["player_hp"], state["player_gold"] = gamefunctions.sleep_in_town(
