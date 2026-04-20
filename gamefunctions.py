@@ -152,7 +152,7 @@ def print_main_menu(current_hp, current_gold):
     print("You are in a stinky town.")
     print(f"HP: {current_hp}, Gold: {current_gold}")
     print("What do you want to do?")
-    print("1) Fight a monster?")
+    print("1) Time to Explore?")
     print("2) Sleep. (Restore HP for 5 Gold)")
     print("3) Visit Shop")
     print("4) Show Inventtory")
@@ -197,6 +197,9 @@ def display_fight_stats(player_hp, monster_name, monster_hp):
     print(f"{monster_name} HP: {monster_hp}")
     print("1) Attack!")
     print("2) Run")
+    print("3) Use Magic Bomb")
+
+    
 
 
 def get_fight_choice():
@@ -205,7 +208,7 @@ def get_fight_choice():
     
     choice = input("Enter choice: ")
 
-    while choice not in ["1", "2"]:
+    while choice not in ["1", "2", "3"]:
         print("Invalid choice. Try again.")
         choice = input("Enter choice: ")
 
@@ -244,6 +247,12 @@ def fight_monster(state):
         elif choice == "2":
             print("You run away!")
             break
+        
+        elif choice == "3":
+            used_bomb = use_magic_bomb(state)
+
+            if used_bomb:
+                monster_hp = 0
 
     if player_hp <= 0:
         print("You lost the fight.")
@@ -273,13 +282,127 @@ def create_new_state(player_name):
 
     state = {
         "player_name": player_name,
-        "player_gold": 100,   # lots of gold for testing
+        "player_gold": 100,
         "player_hp": 30,
         "player_inventory": [],
-        "equipped_weapon": None
+        "equipped_weapon": None,
+        "map_state": {
+            "player_x": 0,
+            "player_y": 0,
+            "town_x": 0,
+            "town_y": 0,
+            "monster_x": 4,
+            "monster_y": 4
+
+        }   
     }
 
     return state
+
+def move_player(game_state, direction):
+    
+    """
+    Moves the player one space on the map.
+    Returns:
+        "moved"
+        "town"
+        "monster"
+    """
+
+    map_state = game_state["map_state"]
+
+    if direction == "up" and map_state["player_y"] > 0:
+        map_state["player_y"] -= 1
+
+    elif direction == "down" and map_state["player_y"] < 9:
+        map_state["player_y"] += 1
+
+    elif direction == "left" and map_state["player_x"] > 0:
+        map_state["player_x"] -= 1
+
+    elif direction == "right" and map_state["player_x"] < 9:
+        map_state["player_x"] += 1
+
+    if (map_state["player_x"] == map_state["town_x"] and
+        map_state["player_y"] == map_state["town_y"]):
+        return "town"
+
+    if (map_state["player_x"] == map_state["monster_x"] and
+        map_state["player_y"] == map_state["monster_y"]):
+        return "monster"
+
+    return "moved"
+
+def print_map(game_state):
+    
+    """
+    Prints the 10x10 map.
+    """
+
+    map_state = game_state["map_state"]
+
+    for y in range(10):
+        for x in range(10):
+            if x == map_state["player_x"] and y == map_state["player_y"]:
+                print("P", end="")
+            elif x == map_state["town_x"] and y == map_state["town_y"]:
+                print("T", end="")
+            elif x == map_state["monster_x"] and y == map_state["monster_y"]:
+                print("M", end="")
+            else:
+                print(".", end="")
+        print()
+
+
+def run_map(game_state):
+    
+    """
+    Runs the map until the player reaches town or monster.
+    """
+
+    while True:
+        print()
+        print("WORLD MAP")
+        print_map(game_state)
+        print("Use w a s d to move")
+
+        choice = input("Enter move: ")
+
+        if choice == "w":
+            result = move_player(game_state, "up")
+        elif choice == "s":
+            result = move_player(game_state, "down")
+        elif choice == "a":
+            result = move_player(game_state, "left")
+        elif choice == "d":
+            result = move_player(game_state, "right")
+        else:
+            print("Invalid move.")
+            continue
+
+        if result == "town":
+            return "town"
+        elif result == "monster":
+            return "monster"
+
+def place_new_monster(game_state):
+    
+    """
+    Places the monster in a new random square.
+    """
+
+    map_state = game_state["map_state"]
+
+    new_x = random.randint(0, 9)
+    new_y = random.randint(0, 9)
+
+    while ((new_x == map_state["town_x"] and new_y == map_state["town_y"]) or
+           (new_x == map_state["player_x"] and new_y == map_state["player_y"])):
+        new_x = random.randint(0, 9)
+        new_y = random.randint(0, 9)
+
+    map_state["monster_x"] = new_x
+    map_state["monster_y"] = new_y
 
 
 
@@ -372,7 +495,24 @@ def buy_item(state, choice):
         print(f"You bought a {item['name']}.")
     else:
         print("You do not have enough gold.")
+        
 
+def use_magic_bomb(state):
+    
+    """
+    Uses a magic bomb if the player has one.
+    Removes it from inventory.
+    Returns True if used, False if not.
+    """
+
+    for item in state["player_inventory"]:
+        if item["name"] == "Magic Bomb":
+            state["player_inventory"].remove(item)
+            print("You used a Magic Bomb! BOOM 💥")
+            return True
+
+    print("You do not have a Magic Bomb.")
+    return False
 
 
 def equip_weapon(state):
