@@ -7,6 +7,7 @@ generating a random monster.
 """
 
 import random
+from WanderingMonster import WanderingMonster
 
 def purchase_item(item_price, starting_money,quantity_to_purchase=1):
     """
@@ -215,18 +216,17 @@ def get_fight_choice():
     return choice
 
 
-def fight_monster(state):
+def fight_monster(state, monster):
     
     """fight loop."""
     
-    monster = random_monster()
 
     player_hp = state["player_hp"]
     player_gold = state["player_gold"]
 
-    monster_name = monster["name"]
-    monster_hp = monster["health"]
-    monster_power = monster["power"]
+    monster_name = monster.monster_type
+    monster_hp = monster.hp
+    monster_power = 5
 
     print()
     print(f"A {monster_name} appears!")
@@ -262,6 +262,7 @@ def fight_monster(state):
     elif monster_hp <= 0:
         print("You won the fight!")
         player_gold += 5
+        monster.hp = 0
         print("You found 5 gold.")
 
     state["player_hp"] = player_hp
@@ -286,15 +287,18 @@ def create_new_state(player_name):
         "player_hp": 30,
         "player_inventory": [],
         "equipped_weapon": None,
+        "drunk_moves": 0,
         "map_state": {
-            "player_x": 0,
-            "player_y": 0,
+            "player_x": random.randint(1, 8),
+            "player_y": random.randint(1, 8),
             "town_x": 0,
-            "town_y": 0,
-            "monster_x": 4,
-            "monster_y": 4
+            "town_y": 0
+            
 
-        }   
+        },
+        "monsters": [
+            WanderingMonster.random_spawn([], [(0, 0)], 10, 10)
+        ]
     }
 
     return state
@@ -326,10 +330,11 @@ def move_player(game_state, direction):
     if (map_state["player_x"] == map_state["town_x"] and
         map_state["player_y"] == map_state["town_y"]):
         return "town"
-
-    if (map_state["player_x"] == map_state["monster_x"] and
-        map_state["player_y"] == map_state["monster_y"]):
-        return "monster"
+    
+    for monster in game_state["monsters"]:
+        if map_state["player_x"] == monster.x and map_state["player_y"] == monster.y:
+            return "monster"
+    
 
     return "moved"
 
@@ -343,15 +348,23 @@ def print_map(game_state):
 
     for y in range(10):
         for x in range(10):
+
+            monster_here = False
+
+            for monster in game_state["monsters"]:
+                if monster.x == x and monster.y == y:
+                    monster_here = True
+
             if x == map_state["player_x"] and y == map_state["player_y"]:
                 print("P", end="")
             elif x == map_state["town_x"] and y == map_state["town_y"]:
                 print("T", end="")
-            elif x == map_state["monster_x"] and y == map_state["monster_y"]:
+            elif monster_here:
                 print("M", end="")
             else:
                 print(".", end="")
         print()
+
 
 
 def run_map(game_state):
@@ -359,7 +372,6 @@ def run_map(game_state):
     """
     Runs the map until the player reaches town or monster.
     """
-
     while True:
         print()
         print("WORLD MAP")
@@ -367,6 +379,33 @@ def run_map(game_state):
         print("Use w a s d to move")
 
         choice = input("Enter move: ")
+
+        if game_state["drunk_moves"] > 0:
+            game_state["drunk_moves"] -= 1
+
+            messages = [
+                "WOW that beer is getting the best of ya...",
+                "You are absolutely not in control.",
+                "Bad decisions were made.",
+                "Walking is optional at this point."
+            ]
+
+            print(random.choice(messages))
+
+            old_choice = choice
+
+            directions = ["w", "a", "s", "d"]
+            if choice in directions:
+                directions.remove(choice)
+
+            choice = random.choice(directions)
+
+            print(f"You tried to go {old_choice} but went {choice} instead")
+
+            print(f"Drunk turns left: {game_state['drunk_moves']}")
+
+            if game_state["drunk_moves"] == 0:
+                print("You finally feel normal again.")
 
         if choice == "w":
             result = move_player(game_state, "up")
@@ -384,6 +423,28 @@ def run_map(game_state):
             return "town"
         elif result == "monster":
             return "monster"
+
+        move_all_monsters(game_state)
+
+def move_all_monsters(game_state):
+    map_state = game_state["map_state"]
+
+    for monster in game_state["monsters"]:
+
+        occupied = []
+
+        for other_monster in game_state["monsters"]:
+            if other_monster != monster:
+                occupied.append((other_monster.x, other_monster.y))
+
+        forbidden = [
+            (map_state["player_x"], map_state["player_y"]),
+            (map_state["town_x"], map_state["town_y"])
+        ]
+
+        monster.move(occupied, forbidden, 10, 10)
+    
+
 
 def place_new_monster(game_state):
     
@@ -440,7 +501,36 @@ def create_magic_bomb():
 
     return magic_bomb
 
+def create_32oz_beer():
+    
+    """
+    Creates a 32oz beer.
+    """
 
+    beer = {
+        "name": "32ozBeer",
+        "type": "drink",
+        "effect": "drunk",
+        "drunk_moves": 5
+    }
+
+    return beer
+
+
+def create_64oz_beer():
+    
+    """
+    Creates a 64oz beer.
+    """
+
+    beer = {
+        "name": "64ozBeer",
+        "type": "drink",
+        "effect": "drunk",
+        "drunk_moves": 10
+    }
+
+    return beer
 
 def get_shop_items():
     
@@ -450,7 +540,9 @@ def get_shop_items():
 
     shop_items = [
         create_sword(),
-        create_magic_bomb()
+        create_magic_bomb(),
+        create_32oz_beer(),
+        create_64oz_beer()
     ]
 
     return shop_items
@@ -508,10 +600,30 @@ def use_magic_bomb(state):
     for item in state["player_inventory"]:
         if item["name"] == "Magic Bomb":
             state["player_inventory"].remove(item)
-            print("You used a Magic Bomb! BOOM 💥")
+            print("You used a Magic Bomb! POOF")
             return True
 
     print("You do not have a Magic Bomb.")
+    return False
+
+def drink_beer(state):
+    """
+    Drinks a beer if the player has one.
+    DRUNK.
+    """
+
+    for item in state["player_inventory"]:
+        if item["type"] == "drink":
+            state["player_inventory"].remove(item)
+
+            state["drunk_moves"] = item["drunk_moves"]
+
+            print(f"You chug the {item['name']}...")
+            print("This was a terrible decision.")
+
+            return True
+
+    print("You have no beer to drink.")
     return False
 
 
@@ -572,4 +684,44 @@ def get_weapon_damage(state):
                 return 0
 
     return 0
+
+def get_current_monster(state):
+    map_state = state["map_state"]
+
+    for monster in state["monsters"]:
+        if map_state["player_x"] == monster.x and map_state["player_y"] == monster.y:
+            return monster
+
+    return None
+
+
+def remove_dead_monsters(state):
+    alive_monsters = []
+
+    for monster in state["monsters"]:
+        if monster.hp > 0:
+            alive_monsters.append(monster)
+
+    state["monsters"] = alive_monsters
+
+
+def spawn_monsters_if_needed(state):
+    map_state = state["map_state"]
+
+    if len(state["monsters"]) == 0:
+        forbidden = [
+            (map_state["player_x"], map_state["player_y"]),
+            (map_state["town_x"], map_state["town_y"])
+        ]
+
+        monster1 = WanderingMonster.random_spawn([], forbidden, 10, 10)
+
+        occupied = [
+            (monster1.x, monster1.y)
+        ]
+
+        monster2 = WanderingMonster.random_spawn(occupied, forbidden, 10, 10)
+
+        state["monsters"] = [monster1, monster2]
+
     
